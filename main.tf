@@ -75,7 +75,8 @@ resource "azurerm_application_gateway" "network" {
   }
 
   backend_address_pool {
-    name = "${azurerm_virtual_network.vnet.name}-beap"
+    name            = "${azurerm_virtual_network.vnet.name}-beap"
+    ip_address_list = ["10.0.2.4", "10.0.2.5"]
   }
 
   backend_http_settings {
@@ -155,8 +156,9 @@ resource "azurerm_virtual_machine_scale_set" "vm-windows" {
     primary = true
 
     ip_configuration {
-      name                                   = "IPConfiguration"
-      subnet_id                              = "${azurerm_subnet.sub2.id}"
+      name      = "IPConfiguration"
+      subnet_id = "${azurerm_subnet.sub2.id}"
+
       #load_balancer_backend_address_pool_ids = ["${module.loadbalancer.azurerm_lb_backend_address_pool_id}"]
     }
   }
