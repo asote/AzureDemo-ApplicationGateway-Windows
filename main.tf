@@ -16,6 +16,10 @@ resource "azurerm_virtual_network" "vnet" {
   resource_group_name = "${azurerm_resource_group.network.name}"
   address_space       = ["10.0.0.0/16"]
   location            = "${azurerm_resource_group.network.location}"
+
+  "tags" {
+    name = "Antonio Sotelo"
+  }
 }
 
 resource "azurerm_subnet" "sub1" {
@@ -37,6 +41,10 @@ resource "azurerm_public_ip" "pip" {
   location                     = "${azurerm_resource_group.network.location}"
   resource_group_name          = "${azurerm_resource_group.network.name}"
   public_ip_address_allocation = "dynamic"
+
+  "tags" {
+    name = "Antonio Sotelo"
+  }
 }
 
 # Create an application gateway
@@ -91,5 +99,9 @@ resource "azurerm_application_gateway" "network" {
     http_listener_name         = "${azurerm_virtual_network.vnet.name}-httplstn"
     backend_address_pool_name  = "${azurerm_virtual_network.vnet.name}-beap"
     backend_http_settings_name = "${azurerm_virtual_network.vnet.name}-be-htst"
+  }
+
+  "tags" {
+    name = "Antonio Sotelo"
   }
 }
