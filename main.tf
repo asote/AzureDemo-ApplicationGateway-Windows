@@ -105,3 +105,73 @@ resource "azurerm_application_gateway" "network" {
     name = "Antonio Sotelo"
   }
 }
+
+// Add virtual machine scale set
+resource "azurerm_virtual_machine_scale_set" "vm-windows" {
+  name                = "vmscaleset1"
+  location            = "${azurerm_resource_group.network.location}"
+  resource_group_name = "${azurerm_resource_group.network.name}"
+  upgrade_policy_mode = "Manual"
+
+  tags {
+    name = "Antonio Sotelo"
+  }
+
+  sku {
+    name     = "Standard_DS2"
+    tier     = "Standard"
+    capacity = "2"
+  }
+
+  storage_profile_image_reference {
+    publisher = "MicrosoftWindowsServer"
+    offer     = "WindowsServer"
+    sku       = "2016-Datacenter"
+    version   = "latest"
+  }
+
+  storage_profile_os_disk {
+    name              = ""
+    caching           = "ReadWrite"
+    create_option     = "FromImage"
+    managed_disk_type = "Standard_LRS"
+  }
+
+  storage_profile_data_disk {
+    lun           = 0
+    caching       = "ReadWrite"
+    create_option = "Empty"
+    disk_size_gb  = 40
+  }
+
+  os_profile {
+    computer_name_prefix = "vmss-"
+    admin_username       = "azureuser"
+    admin_password       = "T3rr@f0rm1$C00l!"
+  }
+
+  network_profile {
+    name    = "vmssetworkprofile"
+    primary = true
+
+    ip_configuration {
+      name                                   = "IPConfiguration"
+      subnet_id                              = "${azurerm_subnet.sub2.id}"
+      #load_balancer_backend_address_pool_ids = ["${module.loadbalancer.azurerm_lb_backend_address_pool_id}"]
+    }
+  }
+
+  extension {
+    name                 = "vmssextension"
+    publisher            = "Microsoft.Compute"
+    type                 = "CustomScriptExtension"
+    type_handler_version = "1.8"
+
+    settings = <<SETTINGS
+    {
+        "fileUris": [ "https://raw.githubusercontent.com/asote/AzureDemo-ApplicationGateway-Windows/master/Configure-WebServer.ps1" ],
+        "commandToExecute": "powershell -ExecutionPolicy Unrestricted -File Configure-WebServer.ps1"
+    }
+    SETTINGS
+  }
+}
