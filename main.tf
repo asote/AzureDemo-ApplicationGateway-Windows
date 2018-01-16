@@ -177,3 +177,29 @@ resource "azurerm_virtual_machine_scale_set" "vm-windows" {
     SETTINGS
   }
 }
+
+// Add Azure SQL Database
+resource "azurerm_sql_database" "db" {
+  name                = "Demo"
+  resource_group_name = "${azurerm_resource_group.network.name}"
+  location            = "${azurerm_resource_group.network.location}"
+  edition             = "Basic"
+  server_name         = "${azurerm_sql_server.server.name}"
+
+  tags {
+    name = "Antonio Sotelo"
+  }
+}
+
+resource "azurerm_sql_server" "server" {
+  name                         = "dbdemo01"
+  resource_group_name          = "${azurerm_resource_group.network.name}"
+  location                     = "${azurerm_resource_group.network.location}"
+  version                      = "12.0"
+  administrator_login          = "dbuser"
+  administrator_login_password = "T3rr@f0rm!P0w3r"
+
+  tags {
+    name = "Antonio Sotelo"
+  }
+}
