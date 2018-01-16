@@ -203,3 +203,11 @@ resource "azurerm_sql_server" "server" {
     name = "Antonio Sotelo"
   }
 }
+
+resource "azurerm_sql_firewall_rule" "fw" {
+  name                = "dbdemo1firewallrules"
+  resource_group_name = "${azurerm_resource_group.network.name}"
+  server_name         = "${azurerm_sql_server.server.name}"
+  start_ip_address    = "0.0.0.0"
+  end_ip_address      = "0.0.0.0"
+}
