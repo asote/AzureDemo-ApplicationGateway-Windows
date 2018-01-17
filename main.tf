@@ -30,11 +30,11 @@ resource "azurerm_subnet" "sub1" {
 }
 
 resource "azurerm_subnet" "sub2" {
-  name                 = "subnet2"
-  resource_group_name  = "${azurerm_resource_group.network.name}"
-  virtual_network_name = "${azurerm_virtual_network.vnet.name}"
-  address_prefix       = "10.0.2.0/24"
-  network_security_group_id = "${azurerm_network_security_group.security_group.id}
+  name                      = "subnet2"
+  resource_group_name       = "${azurerm_resource_group.network.name}"
+  virtual_network_name      = "${azurerm_virtual_network.vnet.name}"
+  address_prefix            = "10.0.2.0/24"
+  network_security_group_id = "${azurerm_network_security_group.security_group.id}"
 }
 
 resource "azurerm_public_ip" "pip" {
@@ -260,4 +260,25 @@ resource "azurerm_network_security_rule" "security_rule_rdp" {
   destination_address_prefix  = "*"
   resource_group_name         = "${azurerm_resource_group.network.name}"
   network_security_group_name = "${azurerm_network_security_group.security_group.name}"
+}
+
+//Outputs
+output "jumpbox_public_name" {
+  value = "${module.windowsservers.public_ip_dns_name}"
+}
+
+output "jumpbox_public_ip" {
+  value = "${module.windowsservers.public_ip_address}"
+}
+
+output "jumpbox_private_ips" {
+  value = "${module.windowsservers.network_interface_private_ip}"
+}
+
+output "sql_server_fqdn" {
+  value = "${azurerm_sql_server.server.fully_qualified_domain_name}"
+}
+
+output "application_gateway_public_IP" {
+  value = "${azurerm_public_ip.pip.ip_address}"
 }
