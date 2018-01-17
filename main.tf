@@ -239,3 +239,13 @@ resource "azurerm_network_security_rule" "security_rule_rdp" {
   resource_group_name         = "${azurerm_resource_group.network.name}"
   network_security_group_name = "${azurerm_network_security_group.security_group.name}"
 }
+
+//Outputs
+
+output "sql_server_fqdn" {
+  value = "${azurerm_sql_server.server.fully_qualified_domain_name}"
+}
+
+output "application_gateway_public_IP" {
+  value = "${azurerm_public_ip.pip.ip_address}"
+}
