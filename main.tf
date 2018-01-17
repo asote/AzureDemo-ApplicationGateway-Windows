@@ -242,7 +242,7 @@ resource "azurerm_network_security_rule" "security_rule_rdp" {
 
 // Add jumpbox
 resource "azurerm_network_interface" "nic" {
-  name                = "jumpbox"
+  name                = "jumpbox_nic"
   location            = "${azurerm_resource_group.network.location}"
   resource_group_name = "${azurerm_resource_group.network.name}"
 
@@ -250,6 +250,69 @@ resource "azurerm_network_interface" "nic" {
     name                          = "netadapter1"
     subnet_id                     = "${azurerm_subnet.sub2.id}"
     private_ip_address_allocation = "dynamic"
+  }
+}
+
+resource "azurerm_managed_disk" "data" {
+  name                 = "jumbox_datadisk"
+  location             = "${azurerm_resource_group.network.location}"
+  resource_group_name  = "${azurerm_resource_group.network.name}"
+  storage_account_type = "Standard_LRS"
+  create_option        = "Empty"
+  disk_size_gb         = "40"
+}
+
+resource "azurerm_virtual_machine" "jumbox" {
+  name                  = "jumpbox"
+  location              = "${azurerm_resource_group.network.location}"
+  resource_group_name   = "${azurerm_resource_group.network.name}"
+  network_interface_ids = ["${azurerm_network_interface.nic.id}"]
+  vm_size               = "Standard_DS2_V2"
+
+  delete_os_disk_on_termination    = true
+  delete_data_disks_on_termination = true
+
+  storage_image_reference {
+    publisher = "MicrosoftWindowsServer"
+    offer     = "WindowsServer"
+    sku       = "2012-R2-Datacenter"
+    version   = "latest"
+  }
+
+  storage_os_disk {
+    name              = "osdisk1"
+    caching           = "ReadWrite"
+    create_option     = "FromImage"
+    managed_disk_type = "Standard_LRS"
+  }
+
+  # Optional data disks
+  storage_data_disk {
+    name              = "datadisk1"
+    managed_disk_type = "Standard_LRS"
+    create_option     = "Empty"
+    lun               = 0
+    disk_size_gb      = "40"
+  }
+
+  storage_data_disk {
+    name            = "${azurerm_managed_disk.data.name}"
+    managed_disk_id = "${azurerm_managed_disk.data.id}"
+    create_option   = "Attach"
+    lun             = 1
+    disk_size_gb    = "${azurerm_managed_disk.data.disk_size_gb}"
+  }
+
+  os_profile {
+    computer_name  = "jumbox1"
+    admin_username = "azureuser"
+    admin_password = "C0mplxP@s$w0rd!"
+  }
+
+  os_profile_windows_config {}
+
+  tags {
+    name = "Antonio Sotelo"
   }
 }
 
