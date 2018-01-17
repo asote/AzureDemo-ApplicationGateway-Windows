@@ -241,15 +241,44 @@ resource "azurerm_network_security_rule" "security_rule_rdp" {
 }
 
 // Add jumpbox
-resource "azurerm_network_interface" "nic" {
-  name                = "jumpbox_nic"
+resource "azurerm_public_ip" "vm" {
+  name                         = "jumpbox-publicIP"
+  location                     = "${azurerm_resource_group.network.location}"
+  resource_group_name          = "${azurerm_resource_group.network.name}"
+  public_ip_address_allocation = "Dynamic"
+}
+
+resource "azurerm_network_security_group" "vm" {
+  name                = "jumpbox1-nsg"
   location            = "${azurerm_resource_group.network.location}"
   resource_group_name = "${azurerm_resource_group.network.name}"
 
+  security_rule {
+    name                       = "allow_RDP"
+    description                = "Allow remote protocol in from all locations"
+    priority                   = 100
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = "3389"
+    source_address_prefix      = "*"
+    destination_address_prefix = "*"
+  }
+}
+
+resource "azurerm_network_interface" "vm" {
+  name                      = "nic-jumbox1"
+  location                  = "${azurerm_resource_group.network.location}"
+  resource_group_name       = "${azurerm_resource_group.network.name}"
+  network_security_group_id = "${azurerm_network_security_group.vm.id}"
+
   ip_configuration {
-    name                          = "netadapter1"
+    name                          = "ipconfig1"
     subnet_id                     = "${azurerm_subnet.sub2.id}"
-    private_ip_address_allocation = "dynamic"
+    private_ip_address_allocation = "Dynamic"
+
+    public_ip_address_id = "${azurerm_public_ip.vm.id}"
   }
 }
 
@@ -266,7 +295,7 @@ resource "azurerm_virtual_machine" "jumbox" {
   name                  = "jumpbox"
   location              = "${azurerm_resource_group.network.location}"
   resource_group_name   = "${azurerm_resource_group.network.name}"
-  network_interface_ids = ["${azurerm_network_interface.nic.id}"]
+  network_interface_ids = ["${azurerm_network_interface.vm.id}"]
   vm_size               = "Standard_DS2_V2"
 
   delete_os_disk_on_termination    = true
@@ -323,4 +352,8 @@ output "sql_server_fqdn" {
 
 output "application_gateway_public_IP" {
   value = "${azurerm_public_ip.pip.ip_address}"
+}
+
+output "jumpbox_public_IP" {
+  value = "${azurerm_public_ip.vm.ip_address}"
 }
