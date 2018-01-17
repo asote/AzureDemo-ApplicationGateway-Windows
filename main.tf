@@ -240,8 +240,20 @@ resource "azurerm_network_security_rule" "security_rule_rdp" {
   network_security_group_name = "${azurerm_network_security_group.security_group.name}"
 }
 
-//Outputs
+// Add jumpbox
+resource "azurerm_network_interface" "nic" {
+  name                = "jumpbox"
+  location            = "${azurerm_resource_group.network.location}"
+  resource_group_name = "${azurerm_resource_group.network.name}"
 
+  ip_configuration {
+    name                          = "netadapter1"
+    subnet_id                     = "${azurerm_subnet.sub2.id}"
+    private_ip_address_allocation = "dynamic"
+  }
+}
+
+//Outputs
 output "sql_server_fqdn" {
   value = "${azurerm_sql_server.server.fully_qualified_domain_name}"
 }
