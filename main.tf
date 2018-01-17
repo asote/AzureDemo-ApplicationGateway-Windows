@@ -34,6 +34,7 @@ resource "azurerm_subnet" "sub2" {
   resource_group_name  = "${azurerm_resource_group.network.name}"
   virtual_network_name = "${azurerm_virtual_network.vnet.name}"
   address_prefix       = "10.0.2.0/24"
+  network_security_group_id = "${azurerm_network_security_group.security_group.id}
 }
 
 resource "azurerm_public_ip" "pip" {
@@ -227,9 +228,36 @@ module "windowsservers" {
   vm_os_offer         = "WindowsServer"
   vm_os_sku           = "2012-R2-Datacenter"
   vm_size             = "Standard_DS2_V2"
-  vnet_subnet_id      = "${azurerm_subnet.subnet.id}"
+  vnet_subnet_id      = "${azurerm_subnet.sub2.id}"
 
   tags {
     name = "Antonio Sotelo"
   }
+}
+
+// Create NSG
+resource "azurerm_network_security_group" "security_group" {
+  name                = "subnet2access"
+  location            = "${azurerm_resource_group.network.location}"
+  resource_group_name = "${azurerm_resource_group.network.name}"
+
+  "tags" {
+    name = "Antonio Sotelo"
+  }
+}
+
+// Create NSG rule for RDP
+
+resource "azurerm_network_security_rule" "security_rule_rdp" {
+  name                        = "rdp"
+  priority                    = 101
+  direction                   = "Inbound"
+  access                      = "Allow"
+  protocol                    = "Tcp"
+  source_port_range           = "*"
+  destination_port_range      = "3389"
+  source_address_prefix       = "*"
+  destination_address_prefix  = "*"
+  resource_group_name         = "${azurerm_resource_group.network.name}"
+  network_security_group_name = "${azurerm_network_security_group.security_group.name}"
 }
