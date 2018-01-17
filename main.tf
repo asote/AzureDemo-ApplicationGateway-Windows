@@ -34,7 +34,7 @@ resource "azurerm_subnet" "sub2" {
   resource_group_name       = "${azurerm_resource_group.network.name}"
   virtual_network_name      = "${azurerm_virtual_network.vnet.name}"
   address_prefix            = "10.0.2.0/24"
-  #network_security_group_id = "${azurerm_network_security_group.security_group.id}"
+  network_security_group_id = "${azurerm_network_security_group.security_group.id}"
 }
 
 resource "azurerm_public_ip" "pip" {
@@ -213,4 +213,29 @@ resource "azurerm_sql_firewall_rule" "fw" {
   end_ip_address      = "0.0.0.0"
 }
 
+// Create NSG
+resource "azurerm_network_security_group" "security_group" {
+  name                = "subnet2access"
+  location            = "${azurerm_resource_group.network.location}"
+  resource_group_name = "${azurerm_resource_group.network.name}"
 
+  "tags" {
+    name = "Antonio Sotelo"
+  }
+}
+
+// Create NSG rule for RDP
+
+resource "azurerm_network_security_rule" "security_rule_rdp" {
+  name                        = "rdp"
+  priority                    = 101
+  direction                   = "Inbound"
+  access                      = "Allow"
+  protocol                    = "Tcp"
+  source_port_range           = "*"
+  destination_port_range      = "3389"
+  source_address_prefix       = "*"
+  destination_address_prefix  = "*"
+  resource_group_name         = "${azurerm_resource_group.network.name}"
+  network_security_group_name = "${azurerm_network_security_group.security_group.name}"
+}
