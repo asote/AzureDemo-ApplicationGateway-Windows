@@ -291,8 +291,8 @@ resource "azurerm_managed_disk" "data" {
   disk_size_gb         = "40"
 }
 
-resource "azurerm_virtual_machine" "jumbox" {
-  name                  = "jumpbox"
+resource "azurerm_virtual_machine" "jumpbox" {
+  name                  = "bastion"
   location              = "${azurerm_resource_group.network.location}"
   resource_group_name   = "${azurerm_resource_group.network.name}"
   network_interface_ids = ["${azurerm_network_interface.vm.id}"]
@@ -339,6 +339,27 @@ resource "azurerm_virtual_machine" "jumbox" {
   }
 
   os_profile_windows_config {}
+
+  tags {
+    name = "Antonio Sotelo"
+  }
+}
+
+resource "azurerm_virtual_machine_extension" "script" {
+  name                 = "jumpbox"
+  location             = "${azurerm_resource_group.network.location}"
+  resource_group_name  = "${azurerm_resource_group.network.name}"
+  virtual_machine_name = "${azurerm_virtual_machine.jumpbox.name}"
+  publisher            = "Microsoft.Compute"
+  type                 = "CustomScriptExtension"
+  type_handler_version = "1.8"
+
+  settings = <<SETTINGS
+    {
+        "fileUris": [ "https://raw.githubusercontent.com/asote/AzureDemo-ApplicationGateway-Windows/master/Configure-Jumpbox.ps1" ],
+        "commandToExecute": "powershell -ExecutionPolicy Unrestricted -File Configure-Jumpbox.ps1"
+    }
+SETTINGS
 
   tags {
     name = "Antonio Sotelo"
