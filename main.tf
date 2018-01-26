@@ -338,7 +338,9 @@ resource "azurerm_virtual_machine" "jumpbox" {
     admin_password = "C0mplxP@s$w0rd!"
   }
 
-  os_profile_windows_config {}
+  os_profile_windows_config {
+    provision_vm_agent = true
+  }
 
   tags {
     name = "Antonio Sotelo"
